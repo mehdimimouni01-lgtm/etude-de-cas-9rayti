@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Étude de cas 9rayti</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232B44C9'/%3E%3Ctext x='16' y='22.5' font-family='Arial' font-weight='700' font-size='17' fill='%23F5F6F8' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" rel="stylesheet">
+<style>
+/* =========================================================
+   TOKENS  (single light theme, one accent, cool neutrals)
+   ========================================================= */
+:root {
+  --bg: #F5F6F8;
+  --surface: #ECEEF2;
+  --surface-2: #E2E5EB;
+  --field: #FBFBFC;
+  --ink: #0E1116;
+  --ink-2: #2A2F38;
+  --muted: #59606D;
+  --faint: #6B7280;
+  --line: #D9DDE4;
+  --accent: #2B44C9;
+  --accent-hover: #2439A8;
+  --accent-soft: #E4E8F8;
+  --on-accent: #F5F6F8;
+  --ok: #1C7A50;   --ok-soft: #E1F0E8;
+  --warn: #8F5C0E; --warn-soft: #F6ECD9;
+  --bad: #B3304A;  --bad-soft: #F7E3E7;
+  --t1: #B8413F; --t2: #1F7A5A; --t3: #2B44C9; --t4: #A36A12;
+
+  --shadow-sm: 0 1px 2px rgba(22, 30, 60, .06);
+  --shadow-pop: 0 0 0 1px rgba(22, 30, 60, .06), 0 2px 4px rgba(22, 30, 60, .05), 0 18px 48px -12px rgba(22, 30, 60, .22);
+
+  --display: 'Cabinet Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --sans: 'Satoshi', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --bar-h: 64px;
+  --r-lg: 20px; --r-md: 14px; --r-sm: 9px;
+  --z-bar: 50; --z-pop: 60; --z-float: 40; --z-toast: 70; --z-fx: 80;
+  color-scheme: light;
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar-h) + 24px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink-2);
+  font-family: var(--sans); font-size: 17.5px; line-height: 1.7; font-weight: 400;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent-soft); color: var(--ink); }
+a { color: inherit; }
+h1, h2, h3, h4 { font-family: var(--display); color: var(--ink); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 em, h2 em, h3 em, h4 em { font-style: normal; color: inherit; }
+p { margin: 0; text-wrap: pretty; }
+strong { color: var(--ink); font-weight: 700; }
+em { font-style: italic; color: var(--ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.ph { font-size: 1.1em; line-height: 1; vertical-align: -0.14em; flex-shrink: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: fixed; left: 16px; top: 12px; z-index: 100; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: var(--r-sm); font-weight: 500; text-decoration: none; transform: translateY(-160%); transition: transform 200ms var(--ease-out); }
+.skip:focus { transform: none; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-bar);
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(245, 246, 248, .78);
+  backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px);
+  box-shadow: 0 1px 0 transparent;
+  transition: box-shadow 240ms ease;
+}
+.bar[data-scrolled] { box-shadow: 0 1px 0 var(--line); }
+.bar-in { height: var(--bar-h); max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+
+.mark { justify-self: start; display: inline-flex; align-items: baseline; gap: 10px; text-decoration: none; white-space: nowrap; min-width: 0; }
+.mark b { font-family: var(--display); font-weight: 800; font-size: 19px; color: var(--ink); letter-spacing: -0.02em; }
+.mark span { font-size: 14px; color: var(--muted); }
+
+.switch {
+  display: inline-flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px 0 14px; border: 0; border-radius: 12px;
+  background: transparent; color: var(--ink); cursor: pointer; font: 500 15px/1 var(--sans); max-width: min(46vw, 440px);
+  transition: background-color 160ms ease, transform 160ms var(--ease-out);
+}
+.switch .n { font-family: var(--mono); font-size: 12.5px; color: var(--faint); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.switch .n b { color: var(--accent); font-weight: 600; }
+.switch .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; transition: opacity 180ms var(--ease-out), filter 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.switch .t.swap { opacity: 0; filter: blur(3px); transform: translateY(3px); transition-duration: 110ms; }
+.switch .ph { color: var(--faint); font-size: 15px; transition: transform 220ms var(--ease-out); }
+.switch[aria-expanded="true"] { background: var(--surface); }
+.switch[aria-expanded="true"] .ph { transform: rotate(180deg); }
+.switch:active { transform: scale(0.98); }
+
+.steps { justify-self: end; display: inline-flex; align-items: center; gap: 4px; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 11px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer;
+  display: inline-grid; place-items: center; font-size: 18px;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease-out);
+}
+.icon-btn:active:not(:disabled) { transform: scale(0.95); }
+.icon-btn:disabled { color: var(--line); cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .switch:hover { background: var(--surface); }
+  .icon-btn:hover:not(:disabled) { background: var(--surface); color: var(--ink); }
+}
+
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); display: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { display: block; animation: grow linear both; animation-timeline: scroll(root block); }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+@media (max-width: 760px) {
+  .bar-in { grid-template-columns: auto 1fr; }
+  .mark span { display: none; }
+  .switch { justify-self: end; max-width: 62vw; }
+  .steps { display: none; }
+}
+
+/* =========================================================
+   SOMMAIRE (popover from its trigger)
+   ========================================================= */
+.toc {
+  position: fixed; z-index: var(--z-pop);
+  top: calc(env(safe-area-inset-top, 0px) + var(--bar-h) + 6px); left: 50%; margin-left: calc(min(400px, 100vw - 32px) / -2);
+  width: min(400px, calc(100vw - 32px)); max-height: min(620px, calc(100dvh - var(--bar-h) - 28px)); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--field); border-radius: 16px; box-shadow: var(--shadow-pop); padding: 8px;
+  transform-origin: top center;
+  opacity: 0; transform: scale(0.97) translateY(-4px); visibility: hidden; pointer-events: none;
+  transition: opacity 130ms ease-out, transform 130ms var(--ease-out), visibility 0s linear 130ms;
+}
+.toc[data-open] { opacity: 1; transform: none; visibility: visible; pointer-events: auto; transition: opacity 200ms ease-out, transform 220ms var(--ease-out), visibility 0s; }
+.toc.instant { transition: none !important; }
+@media (max-width: 760px) { .toc { left: auto; right: 16px; margin-left: 0; transform-origin: top right; } }
+.toc-group { padding: 14px 12px 6px; font-size: 13px; font-weight: 500; color: var(--faint); }
+.toc-group:first-child { padding-top: 8px; }
+.toc a {
+  display: grid; grid-template-columns: 28px 1fr 18px; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 10px;
+  text-decoration: none; color: var(--ink-2); font-size: 15.5px; line-height: 1.35;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.toc a .n { font-family: var(--mono); font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.toc a .ph { color: var(--faint); opacity: 0; transition: opacity 200ms ease; font-size: 15px; }
+.toc a.read .ph { opacity: 1; }
+.toc a[aria-current="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 500; }
+.toc a[aria-current="true"] .n { color: var(--accent); }
+.toc a:focus-visible { outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .toc a:hover { background: var(--surface); color: var(--ink); } .toc a[aria-current="true"]:hover { background: var(--accent-soft); } }
+.toc-foot { margin: 6px 4px 2px; padding: 12px 8px 6px; box-shadow: 0 -1px 0 var(--surface); display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; color: var(--faint); }
+.toc-foot kbd { font-family: var(--mono); font-size: 11px; background: var(--surface); border-radius: 5px; padding: 1px 5px; color: var(--ink-2); }
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); }
+main { padding-top: calc(env(safe-area-inset-top, 0px) + var(--bar-h)); }
+.cols { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: clamp(32px, 5vw, 72px); }
+
+/* HERO */
+.hero { padding-block: clamp(56px, 8vw, 96px) 0; }
+.hero-kicker { font-size: 15px; color: var(--muted); margin-bottom: 22px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hero-kicker .sq { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+.hero-kicker .master { color: var(--ink); font-weight: 700; }
+.hero-kicker .kdot { color: var(--faint); margin-inline: -2px; }
+.hero h1 { font-size: clamp(40px, 5vw, 70px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; max-width: 17ch; }
+.hero .lead { margin-top: 24px; font-size: clamp(18px, 1.9vw, 21px); line-height: 1.55; color: var(--muted); max-width: 40ch; }
+.hero-load > * { animation: rise 720ms var(--ease-out) both; }
+.hero-load > *:nth-child(2) { animation-delay: 70ms; }
+.hero-load > *:nth-child(3) { animation-delay: 140ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+/* hero: question on the left, the case subject on the right */
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 420px); gap: 32px clamp(40px, 5vw, 72px); align-items: end; }
+.subject {
+  position: relative; overflow: hidden; text-decoration: none; color: var(--on-accent);
+  background: var(--accent); border-radius: 24px; padding: clamp(24px, 2.6vw, 32px);
+  display: flex; flex-direction: column; gap: 22px; min-height: 340px; justify-content: space-between;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 24px 48px -24px rgba(43, 68, 201, .55);
+  animation: rise 760ms 160ms var(--ease-out) both;
+  transition: transform 220ms var(--ease-out);
+}
+.subject::after { content: ""; position: absolute; right: -80px; top: -80px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.16), transparent); pointer-events: none; }
+.subject:active { transform: scale(0.99); }
+.subject-k { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; font-weight: 500; color: rgba(245,246,248,.78); }
+.subject-k .ph { font-size: 18px; transition: transform 220ms var(--ease-out); }
+.subject-w { font-family: var(--display); font-weight: 800; font-size: clamp(52px, 5.4vw, 76px); line-height: .92; letter-spacing: -0.045em; color: var(--on-accent); padding-bottom: 4px; }
+.subject-w span { color: rgba(245,246,248,.55); }
+.subject dl { margin: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 18px; box-shadow: 0 -1px 0 rgba(245,246,248,.22); }
+.subject dl div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; font-size: 15px; line-height: 1.4; }
+.subject dt { color: rgba(245,246,248,.68); }
+.subject dd { margin: 0; color: var(--on-accent); font-weight: 500; }
+@media (hover: hover) and (pointer: fine) { .subject:hover .subject-k .ph { transform: translate(2px, 2px); } }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } .subject { min-height: 0; } }
+
+/* case file (below hero) */
+.dossier {
+  margin-top: clamp(48px, 7vw, 80px); border-radius: 24px; background: var(--field);
+  box-shadow: 0 0 0 1px rgba(22, 30, 60, .06), 0 1px 2px rgba(22, 30, 60, .04), 0 18px 40px -24px rgba(22, 30, 60, .18);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.1fr);
+  animation: rise 720ms 220ms var(--ease-out) both;
+}
+.zone { padding: clamp(24px, 2.6vw, 34px); display: flex; flex-direction: column; min-width: 0; }
+.zone + .zone { box-shadow: inset 1px 0 0 var(--surface-2); }
+.zone-k { font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: var(--faint); letter-spacing: 0; margin-bottom: 20px; line-height: 1.2; }
+
+/* programme */
+.zone-prog { background: linear-gradient(180deg, var(--accent-soft), rgba(228, 232, 248, 0) 85%); border-radius: 24px 0 0 24px; }
+.prog-name { font-family: var(--display); font-size: clamp(30px, 2.6vw, 38px); font-weight: 800; letter-spacing: -0.035em; line-height: 1; color: var(--ink); }
+.prog-sub { margin-top: 8px; font-size: 16px; color: var(--ink-2); font-weight: 500; }
+.prog-meta { margin: auto 0 0; padding-top: 26px; display: flex; flex-direction: column; gap: 8px; }
+.prog-meta div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; font-size: 14.5px; line-height: 1.4; }
+.prog-meta dt { color: var(--faint); }
+.prog-meta dd { margin: 0; color: var(--ink); font-weight: 500; }
+
+/* people */
+.people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.people li { display: flex; align-items: center; gap: 14px; color: var(--ink); font-weight: 500; font-size: 16.5px; line-height: 1.2; min-width: 0; }
+.ini { width: 36px; height: 36px; border-radius: 11px; background: var(--surface); color: var(--ink-2); display: grid; place-items: center; font: 500 12px/1 var(--mono); letter-spacing: .02em; flex-shrink: 0; }
+/* format */
+.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.fact { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: 16px; }
+.fact .big { font-family: var(--display); font-size: 44px; font-weight: 800; line-height: .85; color: var(--accent); letter-spacing: -0.04em; text-align: center; }
+.fact b { display: block; font-family: var(--display); font-size: 19px; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.01em; }
+.fact span { display: block; margin-top: 2px; font-size: 14.5px; color: var(--muted); line-height: 1.35; }
+
+@media (max-width: 960px) {
+  .dossier { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .zone-prog { grid-column: 1 / -1; border-radius: 24px 24px 0 0; }
+  .zone-prog .prog-meta { margin-top: 0; }
+  .zone + .zone { box-shadow: inset 0 1px 0 var(--surface-2); }
+  .zone + .zone + .zone { box-shadow: inset 0 1px 0 var(--surface-2), inset 1px 0 0 var(--surface-2); }
+}
+@media (max-width: 620px) {
+  .dossier { grid-template-columns: minmax(0, 1fr); }
+  .zone + .zone, .zone + .zone + .zone { box-shadow: inset 0 1px 0 var(--surface-2); }
+}
+
+/* PHASE INTERLUDES */
+.phase {
+  margin-top: clamp(64px, 8vw, 104px); padding-block: clamp(36px, 4.5vw, 52px) 8px;
+  border-top: 1px solid var(--line); align-items: end; row-gap: 0;
+}
+.p-no { grid-row: span 2; display: flex; flex-direction: column; gap: 10px; align-self: start; }
+.p-no small { font-size: 13.5px; font-weight: 500; color: var(--faint); line-height: 1; }
+.p-no b { font-family: var(--display); font-weight: 800; font-size: clamp(84px, 9vw, 128px); line-height: .78; letter-spacing: -0.06em; color: var(--accent); margin-left: -0.04em; }
+.p-no .ph { font-size: clamp(56px, 6vw, 80px); color: var(--accent); line-height: 1; margin-left: -4px; }
+.phase h2 { grid-column: 2; font-size: clamp(38px, 4.8vw, 62px); letter-spacing: -0.045em; font-weight: 800; color: var(--ink); line-height: 1; padding-bottom: 4px; }
+.p-toc { grid-column: 2; list-style: none; margin: 22px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.p-toc a {
+  display: inline-flex; align-items: baseline; gap: 8px; padding: 7px 12px 7px 10px; border-radius: 10px;
+  background: var(--surface); color: var(--ink-2); text-decoration: none; font-size: 14.5px; line-height: 1.2;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease-out);
+}
+.p-toc a .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.p-toc a:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .p-toc a:hover { background: var(--accent-soft); color: var(--ink); } }
+
+/* SECTIONS */
+.sec { padding-block: clamp(44px, 5vw, 64px); }
+.sec-side { display: flex; flex-direction: column; align-self: start; position: sticky; top: calc(var(--bar-h) + 36px); padding-top: 6px; }
+.step { display: flex; flex-direction: column; gap: 8px; }
+.step small { font-size: 13.5px; font-weight: 500; color: var(--faint); line-height: 1; }
+.step b { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: .8; letter-spacing: -0.05em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sec-side .ctx { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); width: min(100%, 150px); line-height: 1.4; }
+.sec-side .ctx::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); margin-right: 8px; vertical-align: 1px; }
+.sec-body { min-width: 0; max-width: 720px; display: flex; flex-direction: column; gap: 22px; }
+.sec-body.wide { max-width: none; }
+.sec h3.title { font-size: clamp(32px, 3.9vw, 48px); line-height: 1.06; letter-spacing: -0.03em; font-weight: 800; }
+.sec .q { font-size: clamp(18px, 1.8vw, 20px); line-height: 1.55; color: var(--muted); margin-top: -8px; max-width: 46ch; }
+h4.sub { font-size: 24px; letter-spacing: -0.015em; line-height: 1.25; }
+.sec + .sec .sec-body { }
+.divider { height: 1px; background: var(--line); margin-left: calc(220px + clamp(32px, 5vw, 72px)); }
+
+@media (max-width: 860px) {
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .sec-side { position: static; flex-direction: row; align-items: center; gap: 14px; padding-top: 0; margin-bottom: 18px; }
+  .step { flex-direction: row; align-items: baseline; gap: 8px; }
+  .step b { font-size: 34px; }
+  .sec-side .ctx { margin: 0; padding: 0 0 0 14px; border-top: 0; border-left: 1px solid var(--line); width: auto; }
+  .p-no { grid-row: auto; flex-direction: row; align-items: flex-end; gap: 12px; margin-bottom: 14px; }
+  .p-no small { order: 2; padding-bottom: 6px; }
+  .p-no b { font-size: 72px; }
+  .p-no .ph { font-size: 52px; }
+  .phase h2, .p-toc { grid-column: 1; }
+  .divider { margin-left: 0; }
+}
+
+/* =========================================================
+   BLOCKS
+   ========================================================= */
+.panel { background: var(--surface); border-radius: var(--r-lg); padding: clamp(20px, 3vw, 30px); display: flex; flex-direction: column; gap: 14px; }
+.panel-label { font-size: 14.5px; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.panel-label .ph { color: var(--accent); }
+
+/* numbered points, separated by space not rules */
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.points li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 14px; }
+.points.plain li { grid-template-columns: minmax(0, 1fr); padding-left: 18px; position: relative; }
+.points.plain li::before { content: ""; position: absolute; left: 0; top: 12px; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+.points .pn { font-family: var(--mono); font-size: 13px; color: var(--accent); padding-top: 4px; font-variant-numeric: tabular-nums; }
+.points .pi { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; color: var(--accent); background: var(--accent-soft); margin-top: 1px; }
+
+/* glossary */
+.lex { background: var(--surface); border-radius: var(--r-lg); padding: clamp(20px, 3vw, 28px); display: flex; flex-direction: column; gap: 18px; }
+.lex-title { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); font-size: 16px; }
+.lex-title .ph { color: var(--accent); font-size: 19px; }
+.lex dl { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.lex .row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 20px; padding: 14px 16px; border-radius: var(--r-md); background: var(--field); }
+.lex dt { font-family: var(--display); font-weight: 700; color: var(--ink); font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.lex dt small { display: block; font-family: var(--sans); font-weight: 400; color: var(--faint); font-size: 13px; letter-spacing: 0; margin-top: 4px; line-height: 1.35; }
+.lex dd { margin: 0; font-size: 16.5px; color: var(--ink-2); }
+.lex .full { display: flex; flex-direction: column; gap: 12px; font-size: 16.5px; }
+@media (max-width: 620px) { .lex .row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+
+/* callouts */
+.callout { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 14px; padding: 18px 20px; border-radius: var(--r-md); background: var(--bg-c); color: var(--ink-2); font-size: 16.5px; }
+.callout .ph { color: var(--fg-c); font-size: 22px; margin-top: 2px; }
+.callout.warn { --bg-c: var(--warn-soft); --fg-c: var(--warn); }
+.callout.ok { --bg-c: var(--ok-soft); --fg-c: var(--ok); }
+
+.pull { font-family: var(--display); font-size: clamp(22px, 2.5vw, 28px); font-weight: 500; line-height: 1.3; color: var(--ink); letter-spacing: -0.015em; }
+
+/* company tiles (2 items, asymmetric) */
+.duo { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 14px; }
+@media (max-width: 720px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+.brand-big { font-family: var(--display); font-size: 40px; font-weight: 800; line-height: 1; color: var(--accent); letter-spacing: -0.035em; }
+.duo .panel.hl { background: var(--accent-soft); }
+
+/* figures */
+figure { margin: 0; }
+.fig { background: var(--surface); border-radius: var(--r-lg); padding: clamp(18px, 3vw, 28px); display: flex; flex-direction: column; gap: 18px; }
+figcaption { font-size: 14px; color: var(--muted); }
+figcaption b { color: var(--ink); font-weight: 700; margin-right: 6px; }
+
+.flow { display: grid; grid-template-columns: minmax(0,1fr) 92px minmax(0,1fr) 92px minmax(0,1fr); align-items: stretch; }
+.node { border-radius: var(--r-md); padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--field); text-align: center; box-shadow: var(--shadow-sm); }
+.node .k { font-size: 12.5px; color: var(--faint); font-weight: 500; }
+.node strong { font-family: var(--display); font-size: 18px; line-height: 1.2; }
+.node .s { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.node.hub { background: var(--accent); box-shadow: none; }
+.node.hub strong, .node.hub .k, .node.hub .s { color: var(--on-accent); }
+.node.hub .k, .node.hub .s { opacity: .8; }
+.link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; text-align: center; font-size: 12px; line-height: 1.3; color: var(--muted); font-family: var(--mono); }
+.link .ln { width: 100%; height: 1.5px; background: var(--faint); position: relative; border-radius: 1px; }
+.link .ln::after { content: ""; position: absolute; right: -1px; top: -4px; border: 4.75px solid transparent; border-left: 7px solid var(--faint); border-right: 0; }
+.flow-back { grid-column: 1 / -1; margin-top: 16px; display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.flow-back .ln { flex: 1; height: 1.5px; background: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 10px); position: relative; }
+.flow-back .ln::before { content: ""; position: absolute; left: -1px; top: -4px; border: 4.75px solid transparent; border-right: 7px solid var(--accent); border-left: 0; }
+@media (max-width: 720px) {
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .link { flex-direction: row; padding: 10px 0; }
+  .link .ln { width: 1.5px; height: 24px; }
+  .link .ln::after { right: -4px; top: auto; bottom: -1px; border: 4.75px solid transparent; border-top: 7px solid var(--faint); border-bottom: 0; }
+}
+
+.layers { display: flex; flex-direction: column; gap: 0; }
+.layer { padding: 18px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; align-items: start; border-radius: var(--r-md); }
+.layer .k { font-size: 13px; font-weight: 500; color: var(--faint); padding-top: 3px; }
+.layer strong { font-family: var(--display); font-size: 18px; }
+.layer.top { background: var(--field); box-shadow: var(--shadow-sm); }
+.layer.bottom { background: var(--accent); color: var(--on-accent); }
+.layer.bottom strong, .layer.bottom .k { color: var(--on-accent); }
+.layer.bottom .k { opacity: .8; }
+.waterline { display: flex; align-items: center; gap: 12px; padding: 0 4px; height: 38px; font-size: 13px; color: var(--muted); }
+.waterline::before, .waterline::after { content: ""; flex: 1; height: 1.5px; background: repeating-linear-gradient(90deg, var(--faint) 0 4px, transparent 4px 8px); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip { font-family: var(--mono); font-size: 12px; padding: 4px 8px; border-radius: 6px; background: var(--surface); color: var(--ink-2); }
+.layer.bottom .chip { background: rgba(245, 246, 248, .16); color: var(--on-accent); }
+@media (max-width: 560px) { .layer { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+/* scenarios */
+.scen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.scen-row { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 20px; padding: 18px 20px; align-items: start; border-radius: var(--r-md); background: var(--surface); }
+.tag { display: inline-flex; align-items: center; gap: 8px; font: 700 14.5px/1 var(--sans); color: var(--fg-c); justify-self: start; padding-top: 5px; }
+.tag .ph { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--bg-c); font-size: 15px; }
+.tag.ok { --fg-c: var(--ok); --bg-c: var(--ok-soft); }
+.tag.warn { --fg-c: var(--warn); --bg-c: var(--warn-soft); }
+.tag.bad { --fg-c: var(--bad); --bg-c: var(--bad-soft); }
+.scen-row p { font-size: 16.5px; }
+@media (max-width: 560px) { .scen-row { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+
+/* evaluation blocks */
+.cta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 20px 32px; padding: clamp(22px, 3vw, 30px); border-radius: var(--r-lg); background: var(--ink); color: #C9CED8; }
+.cta h4 { font-size: 26px; color: var(--bg); letter-spacing: -0.02em; margin-bottom: 8px; }
+.cta p { font-size: 16.5px; color: #B4BAC6; max-width: 52ch; }
+.cta .btn-solid { background: var(--bg); color: var(--ink); box-shadow: none; }
+@media (hover: hover) and (pointer: fine) { .cta .btn-solid:hover { background: #FFFFFFE6; } }
+@media (max-width: 720px) { .cta { grid-template-columns: minmax(0, 1fr); align-items: start; } }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 12px;
+  font: 500 15.5px/1 var(--sans); text-decoration: none; cursor: pointer; border: 0; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background-color 180ms ease, color 180ms ease;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn .ph { font-size: 18px; }
+.btn-solid { background: var(--accent); color: var(--on-accent); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 1px 2px rgba(43, 68, 201, .3); }
+.btn-soft { background: var(--surface-2); color: var(--ink); }
+.btn-text { background: transparent; color: var(--muted); padding: 0 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .btn-solid:hover { background: var(--accent-hover); }
+  .btn-soft:hover { background: #D8DCE3; }
+  .btn-text:hover { color: var(--ink); background: var(--surface); }
+}
+.btn.block { width: 100%; }
+
+/* hold-to-clear */
+.hold { position: relative; overflow: hidden; }
+.hold .fill { position: absolute; inset: 0; background: var(--bad-soft); clip-path: inset(0 100% 0 0); transition: clip-path 200ms var(--ease-out); }
+.hold.holding .fill { clip-path: inset(0 0 0 0); transition: clip-path 1100ms linear; }
+.hold > span:not(.fill) { position: relative; display: inline-flex; align-items: center; gap: 8px; }
+.hold.holding { color: var(--bad); }
+
+/* fields */
+.fld { display: flex; flex-direction: column; gap: 6px; }
+.fld label { font-size: 14px; font-weight: 500; color: var(--ink-2); }
+.field { width: 100%; background: var(--field); border: 1px solid var(--line); color: var(--ink); border-radius: 11px; padding: 11px 13px; font: 400 16px/1.55 var(--sans); transition: border-color 160ms ease, box-shadow 160ms ease; }
+.field::placeholder { color: var(--faint); }
+.field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43, 68, 201, .14); }
+textarea.field { min-height: 120px; resize: vertical; }
+
+/* CANEVAS */
+.canvas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .canvas-grid { grid-template-columns: minmax(0, 1fr); } }
+.pillar { background: var(--surface); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: background-color 200ms ease; }
+.pillar:focus-within { background: var(--accent-soft); }
+.pillar-h { display: flex; align-items: baseline; gap: 10px; }
+.pillar-h .n { font-family: var(--mono); font-size: 12.5px; color: var(--accent); font-weight: 500; }
+.pillar-h h4 { font-size: 20px; letter-spacing: -0.01em; }
+.pillar-h .ph { margin-left: auto; color: var(--ok); font-size: 18px; opacity: 0; transform: scale(.8); transition: opacity 200ms ease, transform 220ms var(--ease-out); align-self: center; }
+.pillar.filled .pillar-h .ph { opacity: 1; transform: none; }
+.pillar p { font-size: 15px; color: var(--muted); line-height: 1.55; }
+.pillar textarea { margin-top: auto; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.toolbar .left { font-size: 14.5px; color: var(--muted); }
+.toolbar .left b { font-family: var(--mono); color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.toolbar .right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* SIMULATION */
+.rules { font-size: 17px; }
+.sim-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 14px; align-items: stretch; }
+@media (max-width: 920px) { .sim-grid { grid-template-columns: minmax(0, 1fr); } }
+.leaders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .leaders { grid-template-columns: minmax(0, 1fr); } }
+
+.timer { background: var(--ink); color: var(--bg); border-radius: var(--r-lg); padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+.timer .panel-label { color: #B4BAC6; }
+.live { width: 8px; height: 8px; border-radius: 2px; background: #6B7280; transition: background-color 200ms ease; }
+.running .live { background: #4CC38A; animation: blink 1.6s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.t-time { font: 500 60px/1 var(--mono); letter-spacing: -0.04em; color: var(--bg); font-variant-numeric: tabular-nums; transition: color 300ms ease; }
+.t-time.danger { color: #F2849A; }
+.t-bar { height: 2px; overflow: hidden; }
+.t-bar i { display: block; height: 100%; background: var(--bg); transform-origin: 0 50%; transition: transform 1000ms linear; }
+.t-time.danger + .t-bar i { background: #F2849A; }
+.t-ctrl { display: flex; gap: 8px; }
+.t-ctrl .btn { height: 42px; flex: 1; }
+.t-ctrl .btn-solid { background: var(--bg); color: var(--ink); box-shadow: none; }
+.t-ctrl .sq { flex: 0 0 42px; padding: 0; background: rgba(245,246,248,.1); color: var(--bg); }
+@media (hover: hover) and (pointer: fine) { .t-ctrl .btn-solid:hover { background: #FFFFFFE6; } .t-ctrl .sq:hover { background: rgba(245,246,248,.18); } }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; border-radius: 11px; background: rgba(245,246,248,.08); gap: 2px; }
+.seg button { height: 32px; border: 0; border-radius: 8px; background: transparent; color: #B4BAC6; font: 500 13px/1 var(--mono); cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.seg button:active { transform: scale(0.96); }
+.seg button[aria-pressed="true"] { background: rgba(245,246,248,.16); color: var(--bg); }
+
+.roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .roles { grid-template-columns: minmax(0, 1fr); } }
+.role { background: var(--surface); border-radius: var(--r-lg); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+.role-title { font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.25; color: var(--ink); display: flex; align-items: flex-start; gap: 12px; letter-spacing: -0.01em; }
+.flag { width: 12px; height: 12px; border-radius: 3px; background: var(--rc); margin-top: 7px; flex-shrink: 0; }
+.role p { font-size: 16px; }
+.assign { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; padding: 8px 12px; border-radius: 10px; color: var(--ink-2); background: var(--field); box-shadow: var(--shadow-sm); }
+.assign b { font-weight: 700; color: var(--ink); transition: filter 220ms var(--ease-out), opacity 220ms var(--ease-out); }
+.assign.spinning b { filter: blur(1.5px); opacity: .7; }
+.assign.final { animation: settle 420ms var(--ease-out); }
+@keyframes settle { from { transform: scale(0.94); filter: blur(3px); } }
+.mission { font-size: 14px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.mission .ph { color: var(--rc); }
+.role ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.role li { position: relative; padding-left: 18px; font-size: 16px; color: var(--ink-2); line-height: 1.55; }
+.role li::before { content: ""; position: absolute; left: 2px; top: 10px; width: 5px; height: 5px; border-radius: 1.5px; background: var(--rc); }
+.role li a { color: var(--accent); text-underline-offset: 3px; }
+
+/* floating mini timer */
+.mini {
+  position: fixed; z-index: var(--z-float); right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 16px 0 14px; border-radius: 14px; border: 0;
+  background: var(--ink); color: var(--bg); box-shadow: var(--shadow-pop); cursor: pointer;
+  font: 500 16px/1 var(--mono); font-variant-numeric: tabular-nums;
+  opacity: 0; transform: translateY(12px) scale(0.96); pointer-events: none; visibility: hidden;
+  transition: opacity 150ms ease-out, transform 150ms var(--ease-out), visibility 0s linear 150ms;
+}
+.mini[data-show] { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity 220ms ease-out, transform 260ms var(--ease-out), visibility 0s; }
+.mini:active { transform: scale(0.97); }
+.mini.danger { color: #F2849A; }
+.mini .live { background: #4CC38A; }
+
+/* toast */
+.toast {
+  position: fixed; z-index: var(--z-toast); left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; max-width: calc(100vw - 32px);
+  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: var(--shadow-pop);
+  transform: translate(-50%, 16px); opacity: 0; pointer-events: none;
+  transition: transform 300ms var(--ease-out), opacity 200ms ease-out;
+}
+.toast[data-show] { transform: translate(-50%, 0); opacity: 1; }
+.toast .ph { color: #4CC38A; font-size: 19px; }
+
+/* FOOTER */
+.foot {
+  margin-top: clamp(72px, 9vw, 120px); background: var(--ink); color: #AEB4C0;
+  border-radius: 32px 32px 0 0; padding-block: clamp(48px, 6vw, 80px) calc(28px + env(safe-area-inset-bottom, 0px));
+  position: relative; overflow: hidden;
+}
+.foot::before { content: ""; position: absolute; left: 50%; top: -320px; width: 900px; height: 520px; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(43, 68, 201, .38), transparent); pointer-events: none; }
+.foot .wrap { position: relative; }
+.foot-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px 40px; flex-wrap: wrap; padding-bottom: clamp(40px, 5vw, 64px); }
+.foot-end { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 7vw, 104px); line-height: .95; letter-spacing: -0.05em; color: var(--bg); max-width: 11ch; }
+.foot-up {
+  display: inline-flex; align-items: center; gap: 14px; color: var(--bg); text-decoration: none; font-weight: 500; font-size: 15.5px;
+  padding: 8px 20px 8px 8px; border-radius: 999px; background: rgba(245, 246, 248, .07);
+  box-shadow: inset 0 0 0 1px rgba(245, 246, 248, .1);
+  transition: background-color 200ms ease, transform 160ms var(--ease-out);
+}
+.foot-up-ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: var(--ink); font-size: 18px; transition: transform 260ms var(--ease-out); }
+.foot-up:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .foot-up:hover { background: rgba(245, 246, 248, .12); }
+  .foot-up:hover .foot-up-ico { transform: translateY(-2px); }
+}
+
+.foot-cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, .9fr); gap: 32px clamp(24px, 4vw, 56px); padding-block: clamp(32px, 4vw, 44px); border-top: 1px solid rgba(245, 246, 248, .1); }
+.fk { font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: #7D8594; letter-spacing: 0; margin-bottom: 16px; }
+.f-big { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1; color: var(--bg); margin-bottom: 14px; }
+.f-big span { color: #7D8594; }
+.f-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.4; }
+.f-people li { color: var(--bg); font-weight: 500; font-size: 16px; }
+.f-links a { display: inline-flex; align-items: baseline; gap: 10px; color: #C9CED8; text-decoration: none; transition: color 160ms ease; }
+.f-links a span { font-family: var(--mono); font-size: 12px; color: #8EA0F0; min-width: 8px; }
+.f-links a:not(:has(span)) { padding-left: 18px; }
+@media (hover: hover) and (pointer: fine) { .f-links a:hover { color: var(--bg); } }
+
+.foot-bottom { display: flex; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; padding-top: 22px; border-top: 1px solid rgba(245, 246, 248, .1); font-size: 13.5px; color: #7D8594; }
+
+@media (max-width: 960px) { .foot-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .foot-cols { grid-template-columns: minmax(0, 1fr); } .foot { border-radius: 24px 24px 0 0; } }
+
+/* SCROLL REVEAL: only content below the first frame is ever hidden */
+.rv { transition: opacity 560ms var(--ease-soft), transform 680ms var(--ease-soft); }
+.rv.pending { opacity: 0; transform: translateY(16px); }
+
+#confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: var(--z-fx); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-load > *, .dossier, .subject { animation: fadeonly 400ms ease both; }
+  @keyframes fadeonly { from { opacity: 0; } }
+  .rv.pending { transform: none; }
+  .toc, .toc[data-open], .mini, .mini[data-show], .toast, .toast[data-show] { transform: none; }
+  .toast, .toast[data-show] { left: 16px; right: 16px; margin: 0 auto; width: fit-content; }
+  .assign.final, .running .live { animation: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#avant">Aller au contenu</a>
+
+<!-- ============ TOP BAR ============ -->
+<header class="bar" id="bar">
+  <div class="bar-in">
+    <a class="mark" href="#top" aria-label="Analyse EdTech, retour au début"><b>Analyse EdTech</b><span>Étude de cas 9rayti</span></a>
+    <button class="switch" id="tocBtn" aria-expanded="false" aria-controls="toc" aria-haspopup="true">
+      <span class="n" id="swN"><b>01</b>/12</span><span class="t" id="swT">Avant de Commencer</span><i class="ph ph-caret-down" aria-hidden="true"></i>
+    </button>
+    <div class="steps">
+      <button class="icon-btn" id="prevBtn" aria-label="Partie précédente"><i class="ph ph-arrow-up"></i></button>
+      <button class="icon-btn" id="nextBtn" aria-label="Partie suivante"><i class="ph ph-arrow-down"></i></button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"></div>
+</header>
+<div id="sentinel" style="position:absolute;top:0;height:8px;width:1px;" aria-hidden="true"></div>
+
+<nav class="toc" id="toc" aria-label="Sommaire"></nav>
+
+<main id="top">
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-load">
+        <p class="hero-kicker"><span class="sq" aria-hidden="true"></span><strong class="master">Master TEIP</strong><span class="kdot" aria-hidden="true">·</span>Études de cas sur la réussite dans la filière EdTech</p>
+        <h1>Comment analyser une startup EdTech&nbsp;?</h1>
+        <p class="lead">Comprendre en profondeur les moteurs économiques et technologiques des plateformes de l'éducation.</p>
+      </div>
+      <a class="subject" href="#exemple" aria-label="Le cas étudié : 9rayti.com, voir la présentation">
+        <span class="subject-k">Le cas étudié <i class="ph ph-arrow-down-right" aria-hidden="true"></i></span>
+        <span class="subject-w">9rayti<span>.com</span></span>
+        <dl>
+          <div><dt>Entreprise</dt><dd>Education Media Company</dd></div>
+          <div><dt>Fondée en</dt><dd>2009, Technopark d'Agadir</dd></div>
+          <div><dt>Fondateur</dt><dd>Adam Bouhadma</dd></div>
+        </dl>
+      </a>
+    </div>
+
+    <div class="dossier">
+      <div class="zone zone-prog">
+        <h2 class="zone-k">Programme</h2>
+        <p class="prog-name">Master TEIP</p>
+        <p class="prog-sub">Technologies de l'Éducation</p>
+        <dl class="prog-meta">
+          <div><dt>Atelier</dt><dd>Analyse EdTech</dd></div>
+          <div><dt>Séance</dt><dd>Chapitre 5, partie 2</dd></div>
+        </dl>
+      </div>
+      <div class="zone">
+        <h2 class="zone-k">Animé par</h2>
+        <ul class="people">
+          <li><span class="ini" aria-hidden="true">MM</span>Mehdi MIMOUNI</li>
+          <li><span class="ini" aria-hidden="true">MK</span>Maryam KHALI</li>
+          <li><span class="ini" aria-hidden="true">ZE</span>Zakaria EN-NASIRY</li>
+          <li><span class="ini" aria-hidden="true">AJ</span>Aya JEDDI</li>
+        </ul>
+      </div>
+      <div class="zone">
+        <h2 class="zone-k">Format de l'atelier</h2>
+        <ul class="facts">
+          <li class="fact"><span class="big">3</span><div><b>Étapes</b><span>Théorie · Audit · Débat</span></div></li>
+          <li class="fact"><span class="big">4</span><div><b>Groupes</b><span>Division de la classe</span></div></li>
+          <li class="fact"><span class="big">1</span><div><b>Livrable</b><span>Canevas de Synthèse</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRÉPARATION ============ -->
+  <div class="phase cols"><div class="p-no"><small>Préparation</small><i class="ph ph-flag-banner" aria-hidden="true"></i></div><h2>Bienvenue</h2></div>
+
+  <section class="sec cols" id="avant" data-title="Avant de Commencer" data-phase="Préparation">
+    <div class="sec-side"><span class="step"><small>Partie</small><b>01</b></span><span class="ctx">Bienvenue</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Avant de commencer</h3>
+      <div class="cta rv">
+        <div><h4>Évaluation Diagnostique</h4><p>Avant d'entamer l'analyse, prenons quelques minutes pour situer vos connaissances actuelles sur les modèles du numérique éducatif.</p></div>
+        <a href="https://forms.gle/yKMHkyNgSrafEroi7" class="btn btn-solid" target="_blank" rel="noopener">Lancer le test <i class="ph ph-arrow-up-right"></i></a>
+      </div>
+      <h4 class="sub rv" style="margin-top:14px;">L'Objectif Pédagogique de l'atelier</h4>
+      <ol class="points rv">
+        <li><span class="pn">01</span><div><strong>Comprendre l'écosystème EdTech :</strong> Identifier les leviers économiques réels (B2B vs B2C) qui financent les technologies de l'éducation.</div></li>
+        <li><span class="pn">02</span><div><strong>Développer un esprit critique technologique :</strong> Distinguer l'innovation pédagogique de rupture d'une simple numérisation, et questionner l'architecture cachée.</div></li>
+        <li><span class="pn">03</span><div><strong>Mener un audit stratégique :</strong> Maîtriser un canevas d'analyse professionnel pour évaluer la fiabilité, la traction et la pérennité de n'importe quelle startup.</div></li>
+        <li><span class="pn">04</span><div><strong>Argumenter et Négocier :</strong> Savoir défendre un modèle technologique ou le remettre en question publiquement face à des décideurs.</div></li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="exemple" data-title="L'Exemple du Jour" data-phase="Préparation">
+    <div class="sec-side"><span class="step"><small>Partie</small><b>02</b></span><span class="ctx">Notre Exemple</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Cas Pratique : Education Media Company</h3>
+      <p class="q rv">L'application de notre méthode sur un pionnier marocain.</p>
+      <div class="duo rv">
+        <div class="panel"><span class="panel-label">Identité de l'entreprise</span><p>Fondée en <strong>2009</strong> au Technopark d'Agadir par Adam Bouhadma. Elle est reconnue comme l'une des entreprises fondatrices du numérique éducatif au Maroc.</p></div>
+        <div class="panel hl"><span class="panel-label">Leur Produit Phare</span><span class="brand-big">9rayti.com</span><p><strong>Un assistant d'orientation</strong> rapide pour vous guider vers les universités et écoles supérieures qui correspondent à votre profil et à votre projet.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 1 ============ -->
+  <div class="phase cols"><div class="p-no"><small>Phase</small><b>1</b></div><h2>Le Constat</h2></div>
+
+  <section class="sec cols" id="defi" data-title="Le Défi Éducatif" data-phase="Phase 1 · Le Constat">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>01</b></span><span class="ctx">Le Constat</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Le Défi Éducatif</h3>
+      <p class="q rv">Pourquoi 9rayti était-elle nécessaire ? L'identification du problème fondamental.</p>
+      <ul class="points plain rv">
+        <li><div><strong>Le contexte en 2008 :</strong> L'information sur l'orientation (dates de concours, filières) était asymétrique, non numérisée, et dépendante de l'affichage physique dans les lycées ou du « bouche-à-oreille ». Cela pénalisait fortement les élèves en zone rurale et les milieux modestes.</div></li>
+        <li><div><strong>Aujourd'hui :</strong> Le défi n'est plus le manque d'information, mais la surcharge d'information (multiplication des universités privées, nouvelles filières) et le besoin de qualification et d'un tri fiable.</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="innovation" data-title="Innovation Pédagogique" data-phase="Phase 1 · Le Constat">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>02</b></span><span class="ctx">Le Constat</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Innovation Pédagogique &amp; Technologique</h3>
+      <p class="q rv">S'agit-il d'une vraie innovation ou d'une simple numérisation ?</p>
+      <p class="rv">La plateforme offre une centralisation des annonces, des simulateurs de notes (bac), et des tests d'orientation. Comparé à une recherche Google brute, 9rayti offre une <strong>contextualisation marocaine spécifique</strong> (intégration du système Massar, prépas locales, concours spécifiques).</p>
+      <div class="callout warn rv"><i class="ph ph-warning"></i><div><strong>Diagnostic Technique :</strong> Il s'agit davantage d'une <em>innovation incrémentale</em> (modèle de portail web / annuaire digitalisé très optimisé) que d'une <em>innovation technologique de rupture</em> (pas d'IA prédictive poussée publiquement documentée à ses débuts). L'innovation a surtout résidé dans la centralisation inédite de l'information.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 2 ============ -->
+  <div class="phase cols"><div class="p-no"><small>Phase</small><b>2</b></div><h2>Le Moteur Interne</h2></div>
+
+  <section class="sec cols" id="flux" data-title="Flux Financiers" data-phase="Phase 2 · Le Moteur Interne">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>03</b></span><span class="ctx">Le Moteur Interne</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Les Flux Financiers</h3>
+      <p class="q rv">Si le produit est gratuit, qui finance l'entreprise ?</p>
+      <div class="lex rv">
+        <div class="lex-title"><i class="ph ph-book-open-text"></i>Comprendre le vocabulaire financier</div>
+        <dl>
+          <div class="row"><dt>B2C<small>Business to Consumer</small></dt><dd>L'entreprise vend directement à l'étudiant (Ex : un abonnement mensuel à une application de langues).</dd></div>
+          <div class="row"><dt>B2B<small>Business to Business</small></dt><dd>L'entreprise vend son logiciel à une école ou à l'État (Ex : Microsoft Teams pour l'éducation).</dd></div>
+          <div class="row"><dt>B2B2C<small>Business to Business to Consumer</small></dt><dd>L'EdTech joue les médiateurs. Elle offre un service <em>gratuit</em> au consommateur (l'étudiant) pour attirer une immense audience. Ensuite, elle se fait rémunérer par une entreprise tierce (une université) qui souhaite recruter cette audience ciblée.</dd></div>
+        </dl>
+      </div>
+      <h4 class="sub rv" style="margin-top:14px;">La Monétisation chez 9rayti</h4>
+      <p class="pull rv">Le modèle a pivoté : d'une monétisation B2C (publicité display au volume) vers un modèle B2B de génération de leads.</p>
+      <ul class="points plain rv">
+        <li><div><strong>La Valeur Sociale (B2C) :</strong> L'élève vient pour trouver son orientation. Il renseigne gratuitement ses notes, sa ville, et ses envies. C'est la création de la base de données.</div></li>
+        <li><div><strong>La Valeur Économique (B2B) :</strong> Les universités privées paient pour accéder à la base de données hyper-qualifiée des bacheliers. En marketing, on appelle ces contacts des <strong>Leads</strong> (prospects).</div></li>
+      </ul>
+      <figure class="fig rv">
+        <div class="flow" role="img" aria-label="Schéma B2B2C : l'élève renseigne gratuitement ses données sur 9rayti.com, qui transmet des leads aux universités privées, qui paient pour y accéder.">
+          <div class="node"><span class="k">B2C, valeur sociale</span><strong>L'élève</strong><span class="s">cherche son orientation</span></div>
+          <div class="link"><span>notes, ville, envies</span><span class="ln"></span><span>gratuit</span></div>
+          <div class="node hub"><span class="k">Intermédiaire</span><strong>9rayti.com</strong><span class="s">base de données des bacheliers</span></div>
+          <div class="link"><span>Leads</span><span class="ln"></span><span>prospects</span></div>
+          <div class="node"><span class="k">B2B, valeur économique</span><strong>Universités privées</strong><span class="s">recrutent l'audience ciblée</span></div>
+          <div class="flow-back"><span class="ln"></span><span>les universités paient pour l'accès</span></div>
+        </div>
+        <figcaption><b>Figure 1.</b> Le modèle B2B2C de 9rayti, d'après les éléments ci-dessus.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="architecture" data-title="Architecture Tech" data-phase="Phase 2 · Le Moteur Interne">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>04</b></span><span class="ctx">Le Moteur Interne</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">L'Architecture Technologique</h3>
+      <p class="q rv">Séparer l'interface publique du moteur de traitement des données.</p>
+      <div class="lex rv">
+        <div class="lex-title"><i class="ph ph-book-open-text"></i>La différence entre la Vitrine et le Moteur</div>
+        <dl>
+          <div class="row"><dt>Le Front-end<small>La Vitrine</small></dt><dd>C'est le site web public. Son seul but est d'être ergonomique et attractif pour capter l'attention de l'élève.</dd></div>
+          <div class="row"><dt>Le Back-end &amp; le CRM<small>Customer Relationship Management</small></dt><dd>CRM signifie <em>Customer Relationship Management</em>. C'est un puissant logiciel invisible pour l'élève. Il trie les millions de données, identifie les meilleurs candidats, et permet aux directeurs d'écoles privées de les contacter.</dd></div>
+        </dl>
+      </div>
+      <figure class="fig rv">
+        <div class="layers">
+          <div class="layer top"><span class="k">Visible</span><div><strong>Front-end (la Vitrine)</strong><div class="chips"><span class="chip">site web public</span><span class="chip">ergonomique</span><span class="chip">attractif</span></div></div></div>
+          <div class="waterline">invisible pour l'élève</div>
+          <div class="layer bottom"><span class="k">Moteur</span><div><strong>Back-end &amp; CRM</strong><div class="chips"><span class="chip">tri des données</span><span class="chip">Scoring</span><span class="chip">contact des écoles</span></div></div></div>
+        </div>
+        <figcaption><b>Figure 2.</b> La Vitrine et le Moteur : ce que l'élève voit, et ce qui crée la valeur.</figcaption>
+      </figure>
+      <h4 class="sub rv" style="margin-top:14px;">La véritable barrière à l'entrée</h4>
+      <p class="rv">Créer un site web avec des informations sur le Baccalauréat est facile. Ce qui est technologiquement complexe, c'est de construire l'algorithme (le <strong>Scoring</strong>) et le CRM qui analysent les données des lycéens pour recommander les bonnes personnes aux bonnes écoles.</p>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 3 ============ -->
+  <div class="phase cols"><div class="p-no"><small>Phase</small><b>3</b></div><h2>La Croissance</h2></div>
+
+  <section class="sec cols" id="acquisition" data-title="Acquisition Utilisateurs" data-phase="Phase 3 · La Croissance">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>05</b></span><span class="ctx">La Croissance</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">L'Acquisition Utilisateurs</h3>
+      <p class="q rv">Comment générer du trafic naturel sans ruiner l'entreprise.</p>
+      <p class="rv">En entrepreneuriat, le <strong>CAC (Coût d'Acquisition Client)</strong> est déterminant. Si une startup doit payer 50 dirhams en publicité pour attirer un étudiant, elle fera faillite. L'enjeu est donc d'attirer les étudiants <em>naturellement</em>.</p>
+      <div class="lex rv">
+        <div class="lex-title"><i class="ph ph-magnifying-glass"></i>La stratégie de survie : le SEO (Search Engine Optimization)</div>
+        <div class="full">
+          <p>Le SEO, c'est l'optimisation pour les Moteurs de Recherche (Google). Au lieu de payer des publicités, la plateforme a rédigé pendant des années des articles pour répondre aux requêtes des lycéens.</p>
+          <p><strong>Conséquence :</strong> Quand un jeune tape une question liée à l'orientation sur Google, la plateforme apparaît en premier. Le trafic est organique, rendant le coût d'acquisition quasiment nul sur le long terme.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="reussite" data-title="Facteurs de Réussite" data-phase="Phase 3 · La Croissance">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>06</b></span><span class="ctx">La Croissance</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Facteurs de Réussite &amp; Écosystème</h3>
+      <p class="q rv">Qu'est-ce qui a fait décoller le projet au-delà de la technologie ?</p>
+      <ul class="points rv">
+        <li><span class="pi"><i class="ph ph-user"></i></span><div><strong>Le profil du fondateur :</strong> Créée à 17 ans, la jeunesse d'Adam Bouhadma a attiré la sympathie des médias et des investisseurs, créant un storytelling puissant de « success story marocaine ».</div></li>
+        <li><span class="pi"><i class="ph ph-coins"></i></span><div><strong>L'investissement clé :</strong> Les 2,5 millions de MAD du <em>Maroc Numeric Fund</em> en 2014 ont permis de structurer la petite TPE en une véritable entreprise média (Education Media Company).</div></li>
+        <li><span class="pi"><i class="ph ph-clock"></i></span><div><strong>Le « X-Factor » (le Timing) :</strong> Arriver sur le web marocain en 2008, <em>avant</em> l'explosion des réseaux sociaux, a permis de capter une audience organique massive qui est devenue une « audience captive ».</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="traction" data-title="Validation & Traction" data-phase="Phase 3 · La Croissance">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>07</b></span><span class="ctx">La Croissance</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Validation &amp; Traction</h3>
+      <p class="q rv">Qu'est-ce qui rassure les institutions académiques ?</p>
+      <h4 class="sub rv">Les Moteurs de la Confiance Institutionnelle</h4>
+      <p class="rv">La <em>Traction</em> désigne la preuve qu'un projet a de l'élan et est validé par le marché. Dans le domaine très conservateur de l'éducation, les universités privées ne signent pas de contrats B2B avec des plateformes inconnues.</p>
+      <div class="callout ok rv"><i class="ph ph-seal-check"></i><div><strong>Reconnaissance Internationale Majeure :</strong> En 2017, la startup a été récompensée lors du Forum sur le Moyen-Orient en Jordanie par le <strong>WEF (World Economic Forum)</strong> et l'<strong>IFC (Société Financière Internationale)</strong>. Ces labels sont des garanties de confiance pour le B2B.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 4 ============ -->
+  <div class="phase cols"><div class="p-no"><small>Phase</small><b>4</b></div><h2>L'Avenir</h2></div>
+
+  <section class="sec cols" id="durabilite" data-title="Modèle & Durabilité" data-phase="Phase 4 · L'Avenir">
+    <div class="sec-side"><span class="step"><small>Étape</small><b>08</b></span><span class="ctx">L'Avenir</span></div>
+    <div class="sec-body">
+      <h3 class="title rv">Modèle Économique &amp; Durabilité</h3>
+      <p class="q rv">Comment ça gagne de l'argent et est-ce viable sur le long terme ?</p>
+      <h4 class="sub rv">Scénarios à horizon 2030</h4>
+      <p class="rv">L'analyse académique exige de pointer les vulnérabilités. Le modèle repose sur un statut d'<em>intermédiaire</em> entre l'étudiant et l'école.</p>
+      <div class="scen rv">
+        <div class="scen-row"><span class="tag ok"><i class="ph ph-trend-up"></i>Optimiste</span><p>Intégration de l'IA pour du conseil hyper-personnalisé, et expansion réussie en Afrique francophone.</p></div>
+        <div class="scen-row"><span class="tag warn"><i class="ph ph-scales"></i>Réaliste</span><p>Croissance modérée, la plateforme reste une agence marketing (MarTech) leader sur la niche étudiante marocaine sans disruption majeure.</p></div>
+        <div class="scen-row"><span class="tag bad"><i class="ph ph-trend-down"></i>Pessimiste</span><p>Désintermédiation totale par des « GPTs d'orientation » (Intelligence Artificielle) ou par des portails gouvernementaux centralisés qui assèchent le trafic de la plateforme.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SYNTHÈSE ============ -->
+  <div class="phase cols"><div class="p-no"><small>Synthèse Finale</small><i class="ph ph-flag-checkered" aria-hidden="true"></i></div><h2>Le Livrable de l'Atelier</h2></div>
+
+  <section class="sec cols" id="canevas" data-title="Le Canevas" data-phase="Synthèse Finale">
+    <div class="sec-side"><span class="step"><small>Partie</small><b>11</b></span><span class="ctx">Le Livrable</span></div>
+    <div class="sec-body wide">
+      <h3 class="title rv">Le Canevas de Synthèse</h3>
+      <p class="q rv">L'outil formel d'audit pour tout projet EdTech, maintenant interactif en 8 piliers.</p>
+      <div class="canvas-grid rv" id="canvas-grid"></div>
+      <div class="toolbar rv">
+        <span class="left"><b id="filledN">0</b> / 8 piliers remplis · notes gardées dans ce navigateur</span>
+        <div class="right">
+          <button class="btn btn-text hold" id="clearBtn" aria-label="Maintenir pour vider le canevas"><span class="fill"></span><span><i class="ph ph-trash"></i> Maintenir pour vider</span></button>
+          <button class="btn btn-solid" id="dlBtn"><i class="ph ph-download-simple"></i> Télécharger (.docx)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sec cols" id="simulation" data-title="Cas Pratique (Jeu)" data-phase="Synthèse Finale">
+    <div class="sec-side"><span class="step"><small>Partie</small><b>12</b></span><span class="ctx">Mise en Pratique</span></div>
+    <div class="sec-body wide">
+      <h3 class="title rv">Simulation Interactive</h3>
+      <p class="q rv">Jeu de Rôle Stratégique : appliquer l'audit aux conditions réelles du marché.</p>
+      <p class="rules rv" style="max-width:720px;"><strong>Règles du jeu :</strong> La classe est divisée en 4 groupes. Vous avez <strong>15 minutes</strong> pour préparer votre stratégie en groupe. Ensuite, nous lançons un grand débat public (« Pitchs » et Négociations) où chaque pôle défend ses intérêts. Lisez bien vos instructions !</p>
+
+      <div class="sim-grid rv">
+        <div class="panel">
+          <span class="panel-label"><i class="ph ph-dice-five"></i>Tirage au sort des Rôles</span>
+          <p style="font-size:16px;">Entrez les noms des 4 leaders (ou noms de groupes) pour leur assigner un rôle aléatoirement.</p>
+          <div class="leaders">
+            <div class="fld"><label for="leader1">Groupe / Leader 1</label><input type="text" id="leader1" class="field" autocomplete="off"></div>
+            <div class="fld"><label for="leader2">Groupe / Leader 2</label><input type="text" id="leader2" class="field" autocomplete="off"></div>
+            <div class="fld"><label for="leader3">Groupe / Leader 3</label><input type="text" id="leader3" class="field" autocomplete="off"></div>
+            <div class="fld"><label for="leader4">Groupe / Leader 4</label><input type="text" id="leader4" class="field" autocomplete="off"></div>
+          </div>
+          <button class="btn btn-solid block" id="drawBtn" style="margin-top:4px;"><i class="ph ph-shuffle"></i> Tirer au sort les rôles</button>
+        </div>
+        <div class="timer" id="timer">
+          <span class="panel-label"><span class="live" aria-hidden="true"></span>Chrono de la Simulation</span>
+          <div class="t-time" id="timeDisplay">15:00</div>
+          <div class="t-bar"><i id="tBar"></i></div>
+          <div class="t-ctrl">
+            <button class="btn btn-solid" id="tPlay"><i class="ph ph-play" id="tPlayIco"></i><span id="tPlayTxt">Démarrer</span></button>
+            <button class="btn sq" id="tReset" aria-label="Réinitialiser"><i class="ph ph-arrow-counter-clockwise"></i></button>
+          </div>
+          <div class="seg" role="group" aria-label="Durée">
+            <button data-min="5" aria-pressed="false">5m</button><button data-min="10" aria-pressed="false">10m</button><button data-min="15" aria-pressed="true">15m</button><button data-min="20" aria-pressed="false">20m</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="roles rv" id="roles-grid">
+        <div class="role" style="--rc:var(--t1)">
+          <div class="role-title"><span class="flag"></span><span>Pôle 1 : Les Attaquants (Startup IA)</span></div>
+          <span class="assign" hidden>Assigné à : <b></b></span>
+          <p><strong>Votre Rôle :</strong> De jeunes ingénieurs qui ont créé un « GPT d'Orientation » révolutionnaire.</p>
+          <p><strong>Votre Objectif :</strong> Détruire le monopole de 9rayti.com (Menace de l'Axe 08).</p>
+          <div class="mission"><i class="ph ph-arrow-right"></i> Votre mission pendant le débat</div>
+          <ul><li>Prouvez aux universités que votre <em>Innovation Technologique</em> (Axe 02) rend le site web classique de 9rayti obsolète.</li><li>Préparez-vous à expliquer comment vous allez trouver des élèves sans bénéficier du référencement naturel Google (SEO) gratuit de 9rayti (Axe 05).</li></ul>
+        </div>
+        <div class="role" style="--rc:var(--t2)">
+          <div class="role-title"><span class="flag"></span><span>Pôle 2 : La Défense (9rayti.com)</span></div>
+          <span class="assign" hidden>Assigné à : <b></b></span>
+          <p><strong>Votre Rôle :</strong> La direction de 9rayti.com, attaquée par la Startup IA.</p>
+          <p><strong>Votre Objectif :</strong> Sauver votre entreprise et rassurer vos clients (les universités).</p>
+          <div class="mission"><i class="ph ph-arrow-right"></i> Votre mission pendant le débat</div>
+          <ul><li>Défendez-vous en utilisant votre <em>Architecture et Base de Données CRM</em> (Axe 04) : l'IA n'a pas les données historiques que vous possédez.</li><li>Rappelez vos <em>Labels Internationaux</em> (Axe 07) : prouvez que le marché peut vous faire confiance à 100%, contrairement à une IA non-labellisée.</li></ul>
+        </div>
+        <div class="role" style="--rc:var(--t3)">
+          <div class="role-title"><span class="flag"></span><span>Pôle 3 : Les Acheteurs (Universités)</span></div>
+          <span class="assign" hidden>Assigné à : <b></b></span>
+          <p><strong>Votre Rôle :</strong> Les directeurs d'écoles supérieures avec un gros budget marketing.</p>
+          <p><strong>Votre Objectif :</strong> Acheter des profils d'étudiants fiables (Modèle B2B - Axe 03).</p>
+          <div class="mission"><i class="ph ph-arrow-right"></i> Votre mission pendant le débat</div>
+          <ul><li>Écoutez les arguments des Pôles 1 et 2 sans prendre parti au début.</li><li>Posez-leur des <em>questions pièges et difficiles</em> sur la qualité des étudiants qu'ils vont vous envoyer.</li><li>À la fin du débat, annoncez avec qui vous signez le contrat et justifiez pourquoi.</li></ul>
+        </div>
+        <div class="role" style="--rc:var(--t4)">
+          <div class="role-title"><span class="flag"></span><span>Pôle 4 : Les Auditeurs (Cabinet TEIP)</span></div>
+          <span class="assign" hidden>Assigné à : <b></b></span>
+          <p><strong>Votre Rôle :</strong> Un jury d'experts impartiaux en Technologies de l'Éducation.</p>
+          <p><strong>Votre Objectif :</strong> Juger la fiabilité de la Startup IA et de 9rayti.com.</p>
+          <div class="mission"><i class="ph ph-arrow-right"></i> Votre mission pendant le débat</div>
+          <ul><li>Ouvrez le <a href="#canevas"><em>Canevas de Synthèse</em></a> (la section avec les 8 cases).</li><li>Pendant que les autres débattent, tapez en direct leurs arguments (les points forts et les failles) dans les bonnes cases.</li><li>À la fin, cliquez sur <em>Télécharger (.docx)</em> et lisez votre rapport officiel à voix haute pour désigner le vainqueur.</li></ul>
+        </div>
+      </div>
+
+      <div class="cta rv">
+        <div><h4>Évaluation Sommative</h4><p>Merci de prendre quelques minutes pour valider l'assimilation des concepts majeurs via ce QCM final.</p></div>
+        <a href="https://forms.gle/yWwAdqfPqNXsXDi26" class="btn btn-solid" target="_blank" rel="noopener">Lancer le QCM final <i class="ph ph-arrow-up-right"></i></a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <p class="foot-end">Fin de l'étude de cas.</p>
+      <a class="foot-up" href="#top"><span class="foot-up-ico"><i class="ph ph-arrow-up"></i></span>Revenir au début</a>
+    </div>
+
+    <div class="foot-cols">
+      <div class="fcol">
+        <h2 class="fk">Programme</h2>
+        <p class="f-big">Master TEIP</p>
+        <ul class="f-list">
+          <li>Technologies de l'Éducation</li>
+          <li>Chapitre 5, partie 2</li>
+          <li>Atelier : Analyse EdTech</li>
+        </ul>
+      </div>
+      <div class="fcol">
+        <h2 class="fk">Animé par</h2>
+        <ul class="f-list f-people">
+          <li>Mehdi MIMOUNI</li>
+          <li>Maryam KHALI</li>
+          <li>Zakaria EN-NASIRY</li>
+          <li>Aya JEDDI</li>
+        </ul>
+      </div>
+      <div class="fcol">
+        <h2 class="fk">Le cas étudié</h2>
+        <p class="f-big">9rayti<span>.com</span></p>
+        <ul class="f-list">
+          <li>Education Media Company</li>
+          <li>Technopark d'Agadir, 2009</li>
+        </ul>
+      </div>
+      <nav class="fcol" aria-label="Parcourir l'étude">
+        <h2 class="fk">Parcourir</h2>
+        <ul class="f-list f-links">
+          <li><a href="#avant">Préparation</a></li>
+          <li><a href="#defi"><span>1</span>Le Constat</a></li>
+          <li><a href="#flux"><span>2</span>Le Moteur Interne</a></li>
+          <li><a href="#acquisition"><span>3</span>La Croissance</a></li>
+          <li><a href="#durabilite"><span>4</span>L'Avenir</a></li>
+          <li><a href="#canevas">Synthèse Finale</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="foot-bottom">
+      <span>Études de cas sur la réussite dans la filière EdTech</span>
+      <span>Master TEIP · Analyse EdTech</span>
+    </div>
+  </div>
+</footer>
+</main>
+
+<button class="mini" id="mini" aria-label="Aller au chronomètre"><span class="live" aria-hidden="true"></span><span id="miniTime">15:00</span></button>
+<div class="toast" id="toast" role="status"><i class="ph ph-check-circle"></i><span id="toastTxt"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js" defer></script>
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const pad = n => String(n).padStart(2, '0');
+const esc = s => s.replace(/&/g, '&amp;');
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const scrollOpt = () => ({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+/* ===================== TOAST ===================== */
+const toast = $('#toast'), toastTxt = $('#toastTxt');
+let toastT;
+function notify(msg) {
+  toastTxt.textContent = msg;
+  toast.setAttribute('data-show', '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => toast.removeAttribute('data-show'), 2600);
+}
+
+/* ===================== SOMMAIRE ===================== */
+const sections = $$('.sec');
+const TOTAL = sections.length;
+const toc = $('#toc'), tocBtn = $('#tocBtn');
+let html = '', lastPhase = '';
+sections.forEach((s, i) => {
+  if (s.dataset.phase !== lastPhase) { lastPhase = s.dataset.phase; html += `<div class="toc-group">${esc(lastPhase)}</div>`; }
+  html += `<a href="#${s.id}"><span class="n">${pad(i + 1)}</span><span>${esc(s.dataset.title)}</span><i class="ph ph-check" aria-hidden="true"></i></a>`;
+});
+html += `<div class="toc-foot"><span><kbd>←</kbd> <kbd>→</kbd> parties</span><span><kbd>/</kbd> ouvrir · <kbd>Échap</kbd> fermer</span></div>`;
+toc.innerHTML = html;
+const tocLinks = $$('a', toc);
+
+/* each phase opener lists the parts it contains */
+$$('.phase').forEach(ph => {
+  const items = [];
+  for (let el = ph.nextElementSibling; el && !el.classList.contains('phase'); el = el.nextElementSibling) {
+    if (el.classList.contains('sec')) items.push(el);
+  }
+  const ol = document.createElement('ol');
+  ol.className = 'p-toc';
+  ol.innerHTML = items.map(s => `<li><a href="#${s.id}"><span class="n">${$('.step b', s).textContent}</span>${esc(s.dataset.title)}</a></li>`).join('');
+  ph.appendChild(ol);
+});
+const isOpen = () => toc.hasAttribute('data-open');
+
+function openToc(instant) {
+  toc.classList.toggle('instant', !!instant);
+  toc.setAttribute('data-open', '');
+  tocBtn.setAttribute('aria-expanded', 'true');
+  requestAnimationFrame(() => (tocLinks[active] || tocLinks[0]).focus({ preventScroll: true }));
+}
+function closeToc(returnFocus) {
+  if (!isOpen()) return;
+  toc.removeAttribute('data-open');
+  tocBtn.setAttribute('aria-expanded', 'false');
+  if (returnFocus) tocBtn.focus({ preventScroll: true });
+  setTimeout(() => toc.classList.remove('instant'), 0);
+}
+tocBtn.addEventListener('click', () => isOpen() ? closeToc() : openToc(false));
+tocLinks.forEach(a => a.addEventListener('click', () => closeToc()));
+document.addEventListener('pointerdown', e => {
+  if (isOpen() && !toc.contains(e.target) && !tocBtn.contains(e.target)) closeToc();
+});
+toc.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  e.preventDefault();
+  const i = tocLinks.indexOf(document.activeElement);
+  tocLinks[e.key === 'ArrowDown' ? Math.min(tocLinks.length - 1, i + 1) : Math.max(0, i - 1)].focus();
+});
+
+/* ===================== ACTIVE SECTION (IntersectionObserver, no scroll listener) ===================== */
+const bar = $('#bar'), swN = $('#swN'), swT = $('#swT');
+const prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn');
+let active = -1, swapT;
+function setActive(i) {
+  if (i === active) return;
+  const first = active === -1;
+  active = i;
+  const s = sections[i];
+  swN.innerHTML = `<b>${pad(i + 1)}</b>/${pad(TOTAL)}`;
+  clearTimeout(swapT);
+  if (first) swT.textContent = s.dataset.title;
+  else {
+    swT.classList.add('swap');
+    swapT = setTimeout(() => { swT.textContent = s.dataset.title; swT.classList.remove('swap'); }, 110);
+  }
+  tocLinks.forEach((a, k) => { a.setAttribute('aria-current', k === i ? 'true' : 'false'); a.classList.toggle('read', k < i); });
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === TOTAL - 1;
+}
+if ('IntersectionObserver' in window) {
+  /* a 1px "reading line" just under the bar (or at 30% on tall screens) */
+  let band;
+  const buildBand = () => {
+    if (band) band.disconnect();
+    const line = Math.round(Math.max(bar.offsetHeight + 48, innerHeight * 0.3));
+    band = new IntersectionObserver(entries => {
+      entries.forEach(en => { if (en.isIntersecting) setActive(sections.indexOf(en.target)); });
+    }, { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
+    sections.forEach(s => band.observe(s));
+  };
+  buildBand();
+  let rT; addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(buildBand, 150); });
+  new IntersectionObserver(([en]) => {
+    if (en.isIntersecting) { bar.removeAttribute('data-scrolled'); setActive(0); }
+    else bar.setAttribute('data-scrolled', '');
+  }).observe($('#sentinel'));
+}
+setActive(0);
+
+function goSection(i) {
+  i = Math.max(0, Math.min(TOTAL - 1, i));
+  sections[i].scrollIntoView(scrollOpt());
+}
+prevBtn.addEventListener('click', () => goSection(active - 1));
+nextBtn.addEventListener('click', () => goSection(active + 1));
+
+document.addEventListener('keydown', e => {
+  const t = e.target, typing = t.matches && t.matches('input, textarea, [contenteditable]');
+  if (e.key === 'Escape') { if (isOpen()) closeToc(true); return; }
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === '/') { e.preventDefault(); isOpen() ? closeToc(true) : openToc(true); }
+  else if (!isOpen() && e.key === 'ArrowRight') { e.preventDefault(); goSection(active + 1); }
+  else if (!isOpen() && e.key === 'ArrowLeft') { e.preventDefault(); goSection(active - 1); }
+});
+
+/* ===================== REVEAL (below the first frame only) ===================== */
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    const batch = entries.filter(en => en.isIntersecting).map(en => en.target);
+    batch.forEach((el, k) => {
+      el.style.transitionDelay = Math.min(k, 4) * 60 + 'ms';
+      el.classList.remove('pending');
+      io.unobserve(el);
+      setTimeout(() => { el.style.transitionDelay = ''; }, 1000);
+    });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  $$('.rv').forEach(el => {
+    if (el.getBoundingClientRect().top > innerHeight) { el.classList.add('pending'); io.observe(el); }
+  });
+}
+
+/* ===================== CANEVAS ===================== */
+const PILLARS = [
+  ['01. Défi Éducatif', "Quel est le problème principal des élèves que 9rayti essaie de résoudre au Maroc ?"],
+  ['02. Innovation', "Qu'est-ce que 9rayti fait de nouveau par rapport aux écoles classiques ? Est-ce juste un site web ou une vraie révolution ?"],
+  ["03. Flux d'Argent", "Qui paie vraiment pour que 9rayti fonctionne ? L'utilisation est-elle payante pour les étudiants ou pour les écoles ?"],
+  ['04. Architecture', "Comment fonctionne la plateforme ? Quelle est la différence entre ce que l'élève voit (le site) et l'outil caché utilisé par les écoles ?"],
+  ["05. Coût d'Acquisition", "Comment 9rayti fait-il pour attirer des millions d'élèves sans dépenser de l'argent dans des publicités payantes ?"],
+  ['06. Réussite & Écosystème', "Qui a créé 9rayti et qui les a aidés financièrement ? Était-ce le bon moment pour lancer ce projet au Maroc ?"],
+  ['07. Traction & Autorité', "Comment 9rayti prouve-t-il qu'il est fiable et sérieux ? Ont-ils des preuves de qualité reconnues à l'international ?"],
+  ['08. Durabilité', "Quels sont les futurs dangers qui pourraient détruire 9rayti demain ? (Par exemple, l'arrivée de l'Intelligence Artificielle)"]
+];
+$('#canvas-grid').innerHTML = PILLARS.map(([t, q], i) => {
+  const n = t.slice(0, 2), name = t.slice(4);
+  return `<div class="pillar">
+    <div class="pillar-h"><span class="n">${n}</span><h4><label for="canvas-${i + 1}">${esc(name)}</label></h4><i class="ph ph-check-circle" aria-hidden="true"></i></div>
+    <p>${q}</p>
+    <textarea id="canvas-${i + 1}" class="canvas-input field" placeholder="Tapez vos notes ici..."></textarea>
+  </div>`;
+}).join('');
+const inputs = $$('.canvas-input'), filledN = $('#filledN');
+function refreshCount() {
+  let n = 0;
+  inputs.forEach(ta => { const f = ta.value.trim().length > 0; if (f) n++; ta.closest('.pillar').classList.toggle('filled', f); });
+  filledN.textContent = n;
+}
+inputs.forEach(ta => {
+  const saved = store.get('edtech-' + ta.id); if (saved) ta.value = saved;
+  let t; ta.addEventListener('input', () => { refreshCount(); clearTimeout(t); t = setTimeout(() => store.set('edtech-' + ta.id, ta.value), 300); });
+});
+refreshCount();
+
+/* hold-to-clear */
+const clearBtn = $('#clearBtn'), fill = $('.fill', clearBtn);
+let holding = false, justCleared = false;
+const startHold = () => { holding = true; clearBtn.classList.add('holding'); };
+const stopHold = () => { holding = false; clearBtn.classList.remove('holding'); };
+fill.addEventListener('transitionend', () => {
+  if (!holding) return;
+  stopHold(); justCleared = true; setTimeout(() => { justCleared = false; }, 600);
+  inputs.forEach(ta => { ta.value = ''; store.set('edtech-' + ta.id, ''); });
+  refreshCount();
+  notify('Canevas vidé');
+});
+clearBtn.addEventListener('pointerdown', e => { if (e.button === 0) startHold(); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => clearBtn.addEventListener(ev, stopHold));
+clearBtn.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); startHold(); } });
+clearBtn.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') stopHold(); });
+clearBtn.addEventListener('click', e => { if (!justCleared && e.detail > 0) notify('Maintenez le bouton pour vider le canevas'); });
+
+/* docx export */
+$('#dlBtn').addEventListener('click', () => {
+  if (!window.docx) { notify("Export indisponible hors connexion. Reconnectez-vous puis réessayez."); return; }
+  const children = [ new docx.Paragraph({ children: [new docx.TextRun({ text: "CANEVAS DE SYNTHÈSE", bold: true, size: 32 })], alignment: docx.AlignmentType.CENTER, spacing: { after: 400 } }) ];
+  inputs.forEach((ta, i) => {
+    children.push(
+      new docx.Paragraph({ children: [new docx.TextRun({ text: PILLARS[i][0], bold: true, size: 24, color: "2B44C9" })], spacing: { before: 200, after: 100 } }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: ta.value || "(Aucune note)", size: 22 })], spacing: { after: 200 } })
+    );
+  });
+  const doc = new docx.Document({ sections: [{ properties: {}, children }] });
+  docx.Packer.toBlob(doc).then(blob => {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Canevas_Synthese.docx"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    notify('Canevas_Synthese.docx téléchargé');
+  });
+});
+
+/* ===================== ROLE ROULETTE ===================== */
+const assigns = $$('#roles-grid .assign'), drawBtn = $('#drawBtn');
+const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+drawBtn.addEventListener('click', () => {
+  const names = [1, 2, 3, 4].map(k => $('#leader' + k).value.trim() || `Équipe ${k}`);
+  const result = shuffle(names);
+  drawBtn.disabled = true;
+  $('#roles-grid').scrollIntoView(scrollOpt());
+  assigns.forEach(a => { a.hidden = false; a.classList.remove('final'); a.classList.add('spinning'); });
+  let spins = 0;
+  const iv = setInterval(() => {
+    const vis = shuffle(names);
+    assigns.forEach((a, i) => { $('b', a).textContent = vis[i]; });
+    if (++spins >= 20) {
+      clearInterval(iv);
+      assigns.forEach((a, i) => { $('b', a).textContent = result[i]; a.classList.remove('spinning'); void a.offsetWidth; a.classList.add('final'); });
+      drawBtn.disabled = false;
+      fireConfetti();
+    }
+  }, 80);
+});
+
+/* ===================== TIMER ===================== */
+let initial = 900, left = 900, tick = null, timerVisible = true;
+const tDisp = $('#timeDisplay'), tBar = $('#tBar'), timer = $('#timer');
+const tPlayIco = $('#tPlayIco'), tPlayTxt = $('#tPlayTxt');
+const mini = $('#mini'), miniTime = $('#miniTime');
+function draw() {
+  const txt = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`;
+  tDisp.textContent = txt; miniTime.textContent = txt;
+  const danger = left <= 60 && left > 0;
+  tDisp.classList.toggle('danger', danger); mini.classList.toggle('danger', danger);
+  tBar.style.transform = `scaleX(${initial ? left / initial : 0})`;
+  timer.classList.toggle('running', !!tick);
+  tPlayIco.className = 'ph ' + (tick ? 'ph-pause' : 'ph-play');
+  tPlayTxt.textContent = tick ? 'Pause' : (left < initial && left > 0 ? 'Reprendre' : 'Démarrer');
+  if (tick && !timerVisible) mini.setAttribute('data-show', ''); else mini.removeAttribute('data-show');
+}
+function stop() { clearInterval(tick); tick = null; }
+$('#tPlay').addEventListener('click', () => {
+  if (tick) stop();
+  else if (left > 0) tick = setInterval(() => { left--; if (left <= 0) { left = 0; stop(); notify('Temps écoulé'); } draw(); }, 1000);
+  draw();
+});
+$('#tReset').addEventListener('click', () => { stop(); left = initial; draw(); });
+$$('.seg button').forEach(b => b.addEventListener('click', () => {
+  stop(); initial = left = +b.dataset.min * 60;
+  $$('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  draw();
+}));
+if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { timerVisible = en.isIntersecting; draw(); }).observe(timer);
+mini.addEventListener('click', () => timer.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' }));
+draw();
+
+/* ===================== CONFETTI (once, after the draw) ===================== */
+const cv = document.createElement('canvas'); cv.id = 'confetti'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
+const cx = cv.getContext('2d');
+const size = () => { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); };
+size(); addEventListener('resize', size);
+let bits = [], running = false;
+const colors = ['#2B44C9', '#8EA0F0', '#0E1116', '#B8413F', '#1F7A5A', '#A36A12'];
+function fireConfetti() {
+  if (reduced.matches) return;
+  for (let i = 0; i < 110; i++) bits.push({ x: innerWidth / 2, y: innerHeight * .6, r: Math.random() * 5 + 2, dx: Math.random() * 18 - 9, dy: Math.random() * -18 - 5, c: colors[i % colors.length], tilt: Math.random() * 10 - 10, ti: Math.random() * .07 + .05, ta: 0 });
+  if (!running) { running = true; requestAnimationFrame(frame); }
+}
+function frame() {
+  cx.clearRect(0, 0, innerWidth, innerHeight);
+  bits = bits.filter(b => b.y < innerHeight + 20);
+  bits.forEach(b => {
+    b.ta += b.ti; b.x += b.dx + Math.sin(b.ta) * 2; b.y += b.dy + (Math.cos(b.ta) + 1 + b.r / 2) / 2; b.dy += .5; b.dx *= .985;
+    cx.beginPath(); cx.lineWidth = b.r; cx.strokeStyle = b.c;
+    cx.moveTo(b.x + b.tilt + b.r, b.y); cx.lineTo(b.x + b.tilt, b.y + b.tilt + b.r); cx.stroke();
+  });
+  if (bits.length) requestAnimationFrame(frame); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
+}
+})();
+</script>
+</body>
+</html>
